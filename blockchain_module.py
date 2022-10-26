@@ -38,7 +38,7 @@ def generate_ECDSA_keys():
     #print("Wallet address / Public key: {0}".format(public_key.decode()))
     return private_key, public_key.decode()
 
-def sign_ECDSA_msg(private_key, addr_from, addr_to, amount):
+def sign_ECDSA_msg(private_key, addr_from, addr_to, amount, message_send, timestamp):
     """Sign the message to be sent
     private_key: must be hex
 
@@ -47,13 +47,13 @@ def sign_ECDSA_msg(private_key, addr_from, addr_to, amount):
     message: str
     """
     #get timestamp, round it, make it string and encode it to bytes
-    message=str(round(time.time()))+'|||'+str(addr_from)+'|||'+str(addr_to)+'|||'+str(amount)
+    message=str(timestamp)+'|||'+str(addr_from)+'|||'+str(addr_to)+'|||'+str(amount)+'|||'+str(message_send)
     bmessage = message.encode()
     sk = ecdsa.SigningKey.from_string(bytes.fromhex(private_key), curve=ecdsa.SECP256k1)
     signature = base64.b64encode(sk.sign(bmessage))
     return signature,message
 
-def send_transaction(addr_from,private_key,addr_to,amount):
+def send_transaction(timestamp, addr_from,private_key,addr_to,amount, message):
     """Sends your transaction to different nodes. Once any of the nodes manage
     to mine a block, your transaction will be added to the blockchain. Dispite
     that, there is a low chance your transaction gets canceled due to other nodes
@@ -67,9 +67,9 @@ def send_transaction(addr_from,private_key,addr_to,amount):
     #addr_to="i7YqTe+slTO9f+MpPYTOrh8p52T21jxpZBf/RiVAS1QRnCel31hpzEfa1T29UWvWlNEWADRESS"
 
     if len(private_key) == 64:
-        signature,message = sign_ECDSA_msg(private_key, addr_from, addr_to, amount)
+        signature,sig_message = sign_ECDSA_msg(private_key, addr_from, addr_to, amount, message, timestamp)
         url     = wallet_config.MINER_NODE_URL+'/txion'
-        payload = {"source": "wallet","option":"newtx", "from_address": addr_from, "to_address": addr_to, "amount": amount, "signature": signature.decode(), "message": message}
+        payload = {"source": "wallet","option":"newtx", "datetime": timestamp, "from_address": addr_from, "to_address": addr_to, "amount": amount, "signature": signature.decode(), "msig_essage": sig_message, "message": message}
         headers = {"Content-Type": "application/json"}
 
         res = requests.post(url, json=payload, headers=headers)

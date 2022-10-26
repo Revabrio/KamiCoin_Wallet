@@ -5,18 +5,19 @@
 """
 
 import os
+import time
 import json
 import aes_module
 import mining_module
 import blockchain_module
 
 def welcome_msg():
-    print("""       =========================================\n
-        SIMPLE COIN v1.0.0 - BLOCKCHAIN SYSTEM\n
-       =========================================\n\n
-        You can find more help at: https://github.com/cosme12/SimpleCoin\n
-        Make sure you are using the latest version or you may end in
-        a parallel chain.\n\n\n""")
+    print("""=========================================\n
+        KamiCoin v0.1.1 - BLOCKCHAIN SYSTEM\n
+        =========================================\n\n
+        You can find more help for blockchain at: https://github.com/Revabrio/KamiCoin\n
+        You can find more help for wallet at: https://github.com/Revabrio/KamiCoin_Wallet\n
+        \n\n\n""")
 
 def wallet(public_key, private_key):
     response = False
@@ -47,12 +48,16 @@ def wallet(public_key, private_key):
 
             addr_to = input("To: introduce destination wallet address\n")
             amount = str(input("Amount: number stating how much do you want to send\n"))
+            message = str(input("You can send message with transaction, enter this message or print n\n"))
+            if message == 'n' or len(message) > 128:
+                print('You refuse to send message, or message too long')
+                message = ''
             print("=========================================\n\n")
             print("Is everything correct?\n")
             print("From: {0}\nPrivate Key: {1}\nTo: {2}\nAmount: {3}\n".format(public_key,private_key,addr_to,amount))
             response = input("y/n\n")
             if response.lower() == "y":
-                blockchain_module.send_transaction(public_key,private_key,addr_to,amount)
+                blockchain_module.send_transaction(str(time.time()), public_key,private_key,addr_to,amount, message)
             response = False
 
         elif response == "4":
