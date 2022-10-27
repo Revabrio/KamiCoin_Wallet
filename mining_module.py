@@ -5,11 +5,19 @@ import requests
 import wallet_config
 
 def get_work(user_iden):
+    """Функция, запрашивает задание у ноды блокчена
+    Отправляет на ноду публичный ключ кошелька владельца майнинг-сервера.
+    """
     data = {"userIdentificator": user_iden, "minerName": wallet_config.MINER_NAME, "minerType": "PC"}
     req = requests.get(wallet_config.MINER_NODE_URL+'/getWork', json=data)
     return json.loads(req.text)
 
 def work(work_data):
+    """Функция, ищущая решение задания, которое майнинг-сервер получил
+    от ноды блокчейна. Перебирает числа от 0 до work_data['max'],
+    добавляет к ним salt (id последнего добытого блока) и хеширует,
+    проверяя сходится ли хеш, который сервер получил от ноды блокчейна.
+    """
     answer = 0
     num_max = int(work_data['max'])
     hash_work = work_data['hash']
@@ -21,33 +29,38 @@ def work(work_data):
     return answer
 
 def check_work(num, user_iden, hashrate):
+    """Функция, отправляет на проверку выполненное задание.
+    """
     data = {"userIdentificator": user_iden, "minerName": wallet_config.MINER_NAME, "minerType": "PC", "number": num,
             "hashrate": hashrate}
     req = requests.post(wallet_config.MINER_NODE_URL+'/checkWork', json=data)
     return json.loads(req.text)
 
 def start_mining(user_iden):
-    print('Start mining')
+    """Главная функция майнинг-сервера. На вход принимает
+    номер кошелька владельца майнинг-сервера, и далее контролирует
+    работу майнинг-сервера.
+    """
+    print('Начинаем майнинг')
     num_succ_works = 0
     while True:
-        print('Get work')
         work_data = get_work(user_iden)
         try:
             time_start = time.time()
-            print(f'New work #{num_succ_works}')
+            print(f'Новая работа #{num_succ_works}')
             answer = work(work_data)
-            print(f'Answer {answer} for work #{num_succ_works}')
+            print(f'Нашли ответ {answer} на работу #{num_succ_works}')
             time_found = int((time.time()-time_start))
             hashrate = str((time_found * 1666) / 100)
             checked_work = check_work(answer, user_iden, hashrate)
             try:
                 if int(checked_work['success']) == 1:
-                    print(f'Work #{num_succ_works} was succesfully checked!')
-                    print(f'speed - {hashrate} KH\s')
+                    print(f'Работа #{num_succ_works} успешно проверена!')
+                    print(f'скорость - {hashrate} KH\s')
                     num_succ_works += 1
             except:
-                print('Max coins was granted, wait another hour')
+                print('Максимальное количество монет было выдано, ожидаем следующий час')
                 time.sleep(60)
         except:
-            print('Max coins was granted, wait another hour')
+            print('Максимальное количество монет было выдано, ожидаем следующий час')
             time.sleep(60)

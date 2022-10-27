@@ -4,6 +4,14 @@ from base64 import b64encode, b64decode
 from Cryptodome.Random import get_random_bytes
 
 def encrypt(plain_text, password):
+    """Функция шифрования данных
+    заданым паролем
+
+    :param plain_text:
+    :param password:
+    :return:
+    """
+
     # generate a random salt
     salt = get_random_bytes(AES.block_size)
 
@@ -24,6 +32,14 @@ def encrypt(plain_text, password):
     }
 
 def decrypt(enc_dict, password):
+    """Функция дешифрования данных
+    заданым паролем
+
+    :param enc_dict:
+    :param password:
+    :return:
+    """
+
     # decode the dictionary entries from base64
     salt = b64decode(enc_dict['salt'])
     cipher_text = b64decode(enc_dict['cipher_text'])
