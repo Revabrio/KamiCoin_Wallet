@@ -21,6 +21,7 @@ import os
 import time
 import json
 import aes_module
+import wallet_config
 import wallet_generator
 import mining_module
 import blockchain_module
@@ -56,7 +57,10 @@ def wallet(public_key, private_key):
 
         elif response == "2":
 
-            blockchain_module.check_balance(public_key)
+            wallet_address = str(input('Пожалуйста, введите адресс кошелька для проверки (или n для проверки вашего): '))
+            if wallet_address == 'n':
+                wallet_address = public_key
+            blockchain_module.check_balance(wallet_address)
             response = False
 
         elif response == "3":
@@ -100,8 +104,8 @@ if __name__ == '__main__':
                 os.remove('wallet_keys')
         else:
             type_keys = input("""Что вы хотите сделать?
-                        1. Создать новый кошелек
-                        2. Импортировать кошелек из seed фразы\n""")
+1. Создать новый кошелек
+2. Импортировать кошелек из seed фразы\n""")
             while type_keys not in ["1", "2"]:
                 type_keys = input('')
             private_key = ''

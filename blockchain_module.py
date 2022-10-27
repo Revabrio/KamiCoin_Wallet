@@ -1,3 +1,4 @@
+import json
 import time
 import ecdsa
 import base64
@@ -12,14 +13,11 @@ def check_transactions():
 
 def check_balance(wallet_to_check):
     """Функция используется для получения баланса кошелька
-    В скором времени будет заменена
+    с помощью explorer блокчейна
     """
-    url     = wallet_config.MINER_NODE_URL+'/txion'
-    payload = {"source": "wallet", "option":"balance", "wallet": wallet_to_check}
-    headers = {"Content-Type": "application/json"}
-
-    res = requests.post(url, json=payload, headers=headers)
-    print('Your balance is: ' + str(float(res.text)))
+    data = {"wallet": wallet_to_check}
+    req = requests.get(wallet_config.EXPLORER_URL + '/wallet_balance', json=data)
+    print(f'Баланс кошелька {wallet_to_check}: ' + str(json.loads(req.text)[wallet_to_check]))
 
 def sign_ECDSA_msg(private_key, addr_from, addr_to, amount, message_send, timestamp):
     """Функция, подписывающая транзакции для блокчейна
@@ -45,4 +43,4 @@ def send_transaction(timestamp, addr_from,private_key,addr_to,amount, message):
         res = requests.post(url, json=payload, headers=headers)
         print(res.text)
     else:
-        print("Wrong address or key length! Verify and try again.")
+        print("Не верный адресс или ключ, перепроверьте данные!!!")
